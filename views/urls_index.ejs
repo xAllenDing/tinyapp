@@ -32,7 +32,8 @@
                 <%= urls[id] %>
               </td>
               <td>
-                <form method="POST" action="/urls/<%=id%>/delete"><button type="submit">Delete</button></form>
+                <form class="d-inline" method="POST" action="/urls/<%=id%>/delete"><button type="submit">Delete</button></form>
+                <a Class="btn btn-primary" href="/urls/<%= id %>">Edit</a>
               </td>
             </tr>
             <% } %>

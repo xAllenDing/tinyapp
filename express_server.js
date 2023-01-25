@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 
 function generateRandomString() {
   let r = (Math.random() + 1).toString(36).substring(6);
+  return r;
 }
 
 app.set("view engine", "ejs");
@@ -32,8 +33,15 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); 
-  res.send("Ok"); 
+  const id = generateRandomString();
+  urlDatabase[id] = req.body.longURL;
+  console.log(req.body);
+  res.redirect(`/urls/${id}`); 
+});
+
+app.get("/u/:id", (req, res) => {
+   const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
 app.get("/urls", (req, res) => {
@@ -48,5 +56,5 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`URL app listening on port ${PORT}!`);
 });

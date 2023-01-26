@@ -24,7 +24,8 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
@@ -42,6 +43,9 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  res.render("registration");
+});
 
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
@@ -71,6 +75,9 @@ app.post("/logout", (req, res) =>{
   res.redirect("/urls");
 });
 
+app.post("/register", (req,res) => {
+  res.redirect("/urls");
+})
 
 app.listen(PORT, () => {
   console.log(`URL app listening on port ${PORT}!`);

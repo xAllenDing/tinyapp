@@ -19,7 +19,7 @@ const getUserByEmail = function (email, database) {
   return undefined;
 };
 
-const userUrls = function (id) {
+const urlsForUser = function (id) {
   const urls = {};
   for (let key in urlDatabase) {
     if (urlDatabase[key].userID === id) {
@@ -127,8 +127,13 @@ const users = {
 
   // user URL page //
   app.get("/urls", (req, res) => {
-    const user = users[req.cookies["user_id"]];
-    const templateVars = { urls: urlDatabase, user: user }
+    const userID = req.session.user_id;
+    const user = users[userID];
+    const urls = urlsForUser(userID);
+    const templateVars = { urls: urls, user: user }
+    if (!userID) {
+      return res.status(403).send("Please login to your account");
+    }
     res.render("urls_index", templateVars);
   });
 
@@ -146,21 +151,33 @@ const users = {
   app.post("/urls", (req, res) => {
     const userID = req.session.user_id;
     const longURL = req.body.longURL;
+    const id = generateRandomString();
     if (!userID) {
       return res.status(403).send("You must be logged in to view URLs");
     }
     if (longURL === "") {
       return res.status(400).send("Cannot shorten empty url");
     }
-    const id = generateRandomString();
     urlDatabase[id] = { longURL: longURL, userID: userID };
     res.redirect(`/urls/${id}`);
   });
 
   // displaying URL page //
   app.get("/urls/:id", (req, res) => {
-    const user = users[req.cookies["user_id"]];
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: user };
+    const userID = req.session.user_id;
+    const longURL = urlDatabase[id].longURL;
+    const id = req.params.id;
+    if (!userID) {
+      return res.status(403).send("Please login to your account");
+    }
+    if (!(id in urlDatabase)) {
+      return res.status(404).send("This URL does not exist");
+    }
+    if (userID !== urlDatabase[id].userID) {
+      return res.status(403).send("This URL does not belong to you");
+    }
+    const user = users[userID];
+    const templateVars = { id: id, longURL: longURL, user: user };
     res.render("urls_show", templateVars);
   });
 
@@ -185,7 +202,18 @@ const users = {
 
   // logout and clearing cookies
   app.post("/urls/:id/delete", (req, res) => {
-    delete urlDatabase[req.params.id];
+    const id = req.params.id;
+    const userID = req.session.user_id;
+    if (!userID) {
+      return res.status(403).send("Please login to your account");
+    } 
+    if (!(id in urlDatabase)) {
+      return res.status(404).send("This URL does not exist");
+    }
+    if (userID !== urlDatabase[id].userID) {
+      return res.status(403).send("This URL does not belong to you");
+    }
+    delete urlDatabase[id];
     res.redirect("/urls");
   });
 

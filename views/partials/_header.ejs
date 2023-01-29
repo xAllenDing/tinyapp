@@ -1,35 +1,30 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <% if(!username) { %>
-      <form method="POST" action="/login">
-        <input type="text" name="username">
+    <% if(!user) { %>
+      <div>
+        <a class="btn btn-primary" href="/registeration">Register</a>
+        <a class="btn btn-primary" href="/login">Login</a>
+        <% } else { %>
+      </div>
+      <form method="POST" action="/logout">
+        <p>
+         Logged in as: <%= user.email %>
+        </p>
         <button type="submit">
-          Login
+          Logout
         </button>
       </form>
-      <% } else { %>
-        <p>
-          <%= username.email %>
-        </p>
-        <form method="POST" action="/logout">
-          <button type="submit">
-            Logout
-          </button>
-        </form>
-        <% } %>
-          <form method="GET" action="/registeration">
-            <button type="submit">Register</button>
-          </form>
-          <a class="navbar-brand" href="/urls">TinyApp</a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-              <a class="nav-item nav-link" href="/urls">My URLs</a>
-              <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-            </div>
+      <% } %>
+        <a class="navbar-brand" href="/urls">TinyApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/urls">My URLs</a>
+            <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           </div>
+        </div>
   </nav>
 </header>

@@ -1,5 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -28,17 +30,21 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    hasedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
+    hasedPassword: bcrypt.hashSync("dishwasher-funk", 10)
+  }
 };
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cookieSession({
+  name: "session",
+  keys: ["user_id"]
+}));
 
 
 // home page //
@@ -49,9 +55,9 @@ app.get("/", (req, res) => {
 // login page
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email);
-  // if (!user) {
-  //   return res.status(403).send("This email is not registered");
-  // }
+  if (!user) {
+    return res.status(403).send("This email is not registered");
+  }
   // if(password !== user.password) {
   //   return res.status(403).send("Please enter correct password.");
   // }
@@ -60,7 +66,13 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  const userID = req.session.user_id;
+  if (userID) {
+    return res.redirect("/urls");
+  }
+  const user = users[userID];
+  const templateVars = { user: user };
+  res.render("login", templateVars);
 });
 
 // registration page //
@@ -86,7 +98,14 @@ app.post("/registeration", (req, res) => {
 });
 
 app.get("/registeration", (req, res) => {
-  res.render("registeration");
+  const userID = req.session.user_id;
+  const email = req.body.email;
+  if (userID) {
+    return res.redirect("/urls");
+  }
+  const user = users[userID];
+  const templateVars = { email: email, user: user };
+  res.render("registeration", templateVars);
 });
 
 // user URL page //

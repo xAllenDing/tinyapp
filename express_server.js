@@ -2,21 +2,13 @@ const express = require("express");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const cookieSession = require("cookie-session");
+const { getUserByEmail } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
 const generateRandomString = function () {
   let r = (Math.random() + 1).toString(36).substring(6);
   return r;
-};
-
-const getUserByEmail = function (email, database) {
-  for (const user in database) {
-    if (database[user].email === email) {
-      return database[user];
-    }
-  }
-  return undefined;
 };
 
 const urlsForUser = function (id) {
@@ -46,12 +38,12 @@ const users = {
     userRandomID: {
       id: "userRandomID",
       email: "user@example.com",
-      hasedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
+      hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
     },
     user2RandomID: {
       id: "user2RandomID",
       email: "user2@example.com",
-      hasedPassword: bcrypt.hashSync("dishwasher-funk", 10)
+      hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
     }
   };
   
@@ -79,7 +71,7 @@ const users = {
     if (!user) {
       return res.status(403).send("This email is not registered");
     }
-    if (!bcrypt.compareSync(password, user.hasedPassword)) {
+    if (!bcrypt.compareSync(password, user.hashedPassword)) {
       return res.status(403).send("Your password does not match");
     }
     req.session.user_id = user.id;
@@ -123,12 +115,11 @@ const users = {
       return bcrypt.hashSync(password, salt);
     })
     .then((hash) => {
-      users[id] = { id: id, email: email, hasedPassword: hash};
+      users[id] = { id: id, email: email, hashedPassword: hash};
         req.session.user_id = id;
         res.redirect("/urls");
       });
   });
-
 
   // This is the user url page and logout
   app.get("/urls", (req, res) => {
@@ -143,7 +134,8 @@ const users = {
   });
   
   app.post("/logout", (req, res) => {
-    req.session.user_id = null;
+    res.clearCookie('session');
+    res.clearCookie('session.sig');
     res.redirect("/login");
   });
 
@@ -237,8 +229,6 @@ const users = {
     const longURL = urlDatabase[id].longURL;
     res.redirect(longURL);
   });
-
-
 
   app.listen(PORT, () => {
     console.log(`URL app listening on port ${PORT}!`);
